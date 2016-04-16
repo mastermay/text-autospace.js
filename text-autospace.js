@@ -1,81 +1,60 @@
-; (function(window, $) {
-    var unicode = [];
-
+;
+(function(window, $) {
     init = function() {
-        if ($('html').hasClass('han-la')) $('body').each(function() {
-            var hanzi = unicode_set('hanzi'),
-            latin = unicode_set('latin') + '|' + unicode['punc'][0],
-            punc = unicode['punc'];
+            $('body').each(function() {
+                var hanzi = '[\u2E80-\u2FFF\u31C0-\u31EF\u3300-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]',
+                    punc = {
+                        base: '[@&=_\,\.\?\!\$\%\^\*\-\+\/]',
+                        open: '[\(\[\{\'"<‘“]',
+                        close: '[\)\]\}\'">’”]'
+                    },
+                    latin = '[A-Za-z0-9\u00C0-\u00FF\u0100-\u017F\u0180-\u024F\u1E00-\u1EFF]' + '|' + punc.base,
+                    patterns = ['/(' + hanzi + ')(' + latin + '|' + punc.open + ')/ig', '/(' + latin + '|' + punc.close + ')(' + hanzi + ')/ig'];
 
-            patterns = ['/(' + hanzi + ')(' + latin + '|' + punc[1] + ')/ig', '/(' + latin + '|' + punc[2] + ')(' + hanzi + ')/ig'];
+                patterns.forEach(function(exp) {
+                        findAndReplaceDOMText(this, {
+                            find: eval(exp),
+                            replace: '$1<hanla>$2'
+                        })
+                    },
+                    this);
 
-            patterns.forEach(function(exp) {
                 findAndReplaceDOMText(this, {
-                    find: eval(exp),
-                    replace: '$1<hanla>$2'
-                })
-            },
-            this);
+                    find: '<hanla>',
+                    replace: function() {
+                        return document.createElement('hanla')
+                    }
+                });
 
-            findAndReplaceDOMText(this, {
-                find: '<hanla>',
-                replace: function() {
-                    return document.createElement('hanla')
-                }
-            });
+                this.normalize();
 
-            this.normalize();
+                $('* > hanla:first-child').parent().each(function() {
+                    if (this.firstChild.nodeType == 1) {
+                        $(this).before($('<hanla/>'));
+                        $(this).find('hanla:first-child').remove();
+                    }
+                });
+            })
+        },
 
-            $('* > hanla:first-child').parent().each(function() {
-                if (this.firstChild.nodeType == 1) {
-                    $(this).before($('<hanla/>'));
-                    $(this).find('hanla:first-child').remove();
-                }
-            });
-        })
-    },
+        findAndReplaceDOMText = function(a, b) {
+            var b = b;
 
-    unicode_set = function(set) {
-        var join = (set.match(/[hanzi|latin]/)) ? true: false,
-        result = (join) ? unicode[set].join('|') : unicode[set];
+            b.filterElements = function(el) {
+                var name = el.nodeName.toLowerCase(),
+                    classes = (el.nodeType == 1) ? el.getAttribute('class') : '',
+                    charized = (classes && classes.match(/han-js-charized/) != null) ? true : false;
 
-        return result;
-    },
+                return name !== 'style' && name !== 'script' && !charized;
+            }
 
-    findAndReplaceDOMText = function(a, b) {
-        var b = b;
-
-        b.filterElements = function(el) {
-            var name = el.nodeName.toLowerCase(),
-            classes = (el.nodeType == 1) ? el.getAttribute('class') : '',
-            charized = (classes && classes.match(/han-js-charized/) != null) ? true: false;
-
-            return name !== 'style' && name !== 'script' && !charized;
+            return window.findAndReplaceDOMText(a, b);
         }
 
-        return window.findAndReplaceDOMText(a, b);
-    }
-
-    unicode['latin'] = ['[A-Za-z0-9\u00C0-\u00FF\u0100-\u017F\u0180-\u024F\u1E00-\u1EFF]'];
-
-    unicode['punc'] = ['[@&=_\,\.\?\!\$\%\^\*\-\+\/]', '[\(\\[\'"<‘“]', '[\)\\]\'">”’]'];
-
-    unicode['hanzi'] = ['[\u4E00-\u9FFF]', '[\u3400-\u4DB5\u9FA6-\u9FBB\uFA70-\uFAD9\u9FBC-\u9FC3\u3007\u3040-\u309E\u30A1-\u30FA\u30FD\u30FE\uFA0E-\uFA0F\uFA11\uFA13-\uFA14\uFA1F\uFA21\uFA23-\uFA24\uFA27-\uFA29]', '[\uD840-\uD868][\uDC00-\uDFFF]|\uD869[\uDC00-\uDEDF]', '\uD86D[\uDC00-\uDF3F]|[\uD86A-\uD86C][\uDC00-\uDFFF]|\uD869[\uDF00-\uDFFF]', '\uD86D[\uDF40-\uDFFF]|\uD86E[\uDC00-\uDC1F]', '[\u31C0-\u31E3]'];
-
-    unicode['biaodian'] = ['[·・︰、，。：；？！—ー⋯…．·／]', '[「『（〔【《〈“‘]', '[」』）〕】》〉’”]'];
-
-    unicode['zhuyin'] = [];
-    unicode['zhuyin'][0] = '[\u3105-\u312D\u31A0-\u31BA]';
-    unicode['zhuyin']['shengmu'] = '[\u3105-\u3119\u312A-\u312C\u31A0-\u31A3]';
-    unicode['zhuyin']['jieyin'] = '[\u3127-\u3129]';
-    unicode['zhuyin']['yunmu'] = '[\u311A-\u3126\u312D\u31A4-\u31B3\u31B8-\u31BA]';
-    unicode['zhuyin']['yunjiao'] = '[\u31B4-\u31B7]';
-    unicode['zhuyin']['diao'] = '[\u02D9\u02CA\u02C5\u02C7\u02CB\u02EA\u02EB]';
-
     $(document).on('ready',
-    function() {
-        init();
-    });
+        function() {
+            init();
+        });
 })(window, window.jQuery, undefined);
 
 /**
@@ -120,7 +99,7 @@ window.findAndReplaceDOMText = (function() {
                 return function(portion, match) {
                     return original(portion.text, match.startIndex);
                 };
-            } (replacement));
+            }(replacement));
         }
 
         // Awkward support for deprecated argument signature (<0.4.0)
@@ -128,8 +107,8 @@ window.findAndReplaceDOMText = (function() {
 
             find: regex,
 
-            wrap: isReplacementFunction ? null: replacement,
-            replace: isReplacementFunction ? replacement: '$' + (captureGroup || '&'),
+            wrap: isReplacementFunction ? null : replacement,
+            replace: isReplacementFunction ? replacement : '$' + (captureGroup || '&'),
 
             prepMatch: function(m, mi) {
 
@@ -158,9 +137,9 @@ window.findAndReplaceDOMText = (function() {
         return true;
     }
 
-    /** 
+    /**
      * findAndReplaceDOMText
-     * 
+     *
      * Locates matches and replaces with replacementNode
      *
      * @param {Node} node Element or Text node to search within
@@ -270,9 +249,10 @@ window.findAndReplaceDOMText = (function() {
 
                 var txt = '';
 
-                if (node = node.firstChild) do {
-                    txt += getText(node);
-                } while ( node = node . nextSibling );
+                if (node = node.firstChild)
+                    do {
+                        txt += getText(node);
+                    } while (node = node.nextSibling);
 
                 return txt;
 
@@ -280,7 +260,7 @@ window.findAndReplaceDOMText = (function() {
 
         },
 
-        /** 
+        /**
          * Steps through the target node, looking for matches, and
          * calling replaceFn when a match is found.
          */
@@ -291,13 +271,13 @@ window.findAndReplaceDOMText = (function() {
             var elementFilter = this.options.filterElements;
 
             var startPortion, endPortion, innerPortions = [],
-            curNode = node,
-            match = matches.shift(),
-            atIndex = 0,
-            // i.e. nodeAtIndex
-            matchIndex = 0,
-            portionIndex = 0,
-            doAvoidNode;
+                curNode = node,
+                match = matches.shift(),
+                atIndex = 0,
+                // i.e. nodeAtIndex
+                matchIndex = 0,
+                portionIndex = 0,
+                doAvoidNode;
 
             out: while (true) {
 
@@ -351,7 +331,7 @@ window.findAndReplaceDOMText = (function() {
                     curNode = this.replaceMatch(match, startPortion, innerPortions, endPortion);
 
                     // processMatches has to return the node that replaced the endNode
-                    // and then we step back so we can continue from the end of the 
+                    // and then we step back so we can continue from the end of the
                     // match:
                     atIndex -= (endPortion.node.data.length - endPortion.endIndexInNode);
 
@@ -406,23 +386,23 @@ window.findAndReplaceDOMText = (function() {
                 return '';
             }
             string = string.replace(/\$(\d+|&|`|')/g,
-            function($0, t) {
-                var replacement;
-                switch (t) {
-                case '&':
-                    replacement = match[0];
-                    break;
-                case '`':
-                    replacement = match.input.substring(0, match.startIndex);
-                    break;
-                case '\'':
-                    replacement = match.input.substring(match.endIndex);
-                    break;
-                default:
-                    replacement = match[ + t];
-                }
-                return replacement;
-            });
+                function($0, t) {
+                    var replacement;
+                    switch (t) {
+                        case '&':
+                            replacement = match[0];
+                            break;
+                        case '`':
+                            replacement = match.input.substring(0, match.startIndex);
+                            break;
+                        case '\'':
+                            replacement = match.input.substring(match.endIndex);
+                            break;
+                        default:
+                            replacement = match[+t];
+                    }
+                    return replacement;
+                });
 
             if (portionMode === PORTION_MODE_FIRST) {
                 return string;
@@ -523,7 +503,7 @@ window.findAndReplaceDOMText = (function() {
                 var innerNodes = [];
 
                 for (var i = 0,
-                l = innerPortions.length; i < l; ++i) {
+                        l = innerPortions.length; i < l; ++i) {
                     var portion = innerPortions[i];
                     var innerNode = this.getPortionReplacementNode(portion, match);
                     portion.node.parentNode.replaceChild(innerNode, portion.node);
@@ -531,7 +511,7 @@ window.findAndReplaceDOMText = (function() {
                         return function() {
                             innerNode.parentNode.replaceChild(portion.node, innerNode);
                         };
-                    } (portion, innerNode)));
+                    }(portion, innerNode)));
                     innerNodes.push(innerNode);
                 }
 
@@ -560,4 +540,4 @@ window.findAndReplaceDOMText = (function() {
 
     return exposed;
 
-} ());
+}());
