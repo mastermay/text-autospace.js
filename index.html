@@ -85,7 +85,9 @@ html.han-la ol > hanla,
 <body>
 	<div id="wrap">
 		<h2>使用方法</h2>
-		<p>引入text-autospace.js</p>
+		<p>引入jquery.js 和 text-autospace.js</p>
+		<pre><script src='https://cdn.bootcss.com/jquery/2.1.1/jquery.min.js'/>
+		<script src='https://crazypeace.github.io/text-autospace.js/text-autospace.min.js'/></pre>
 		<p>你还需要添加如下的css样式：</p>
 		<pre>
 html.han-la hanla:after {
@@ -106,9 +108,14 @@ html.han-la ol > hanla,
 html.han-la ul > hanla {
 	display: none;
 }</pre>
-		<p>你还需要给<html>添加 class='han-la' 属性
+		<p>你还需要给<code><html></code>添加<code>class='han-la'</code>属性
 		<p>程序将会自动在所有的汉字与拉丁字母间添加一个空格，当然，这些空格不会被选中。如果你原本已经手动添加了空格，程序并不会在这之间再添加额外的空格。</p>
 		<p>同时，不会影响使用了等宽字体的<code>code</code>,<code>pre</code>等标签内的内容。</p>
+		<p>如果你有不想应用此js的区域，如blockquote，请添加：</p>
+		<pre>
+html.han-la 如blockquote hanla {
+	display: none;
+}</pre>
 		<p></p>
 		<h2>演示（可使用CTRL+A查看区别）</h2>
 		<h3>不含空格的段落</h3>
