@@ -80,6 +80,10 @@ html.han-la ol > hanla,
 	html.han-la ul > hanla {
 	display: none;
 }
+
+html.han-la tr > hanla {
+    display: none;
+}
 	</style>
 
 </head>
@@ -109,7 +113,11 @@ html.han-la samp hanla {
 html.han-la ol > hanla,
 html.han-la ul > hanla {
 	display: none;
-}</pre>
+}
+html.han-la tr > hanla {
+    display: none;
+}
+</pre>
 		<p>你还需要给<code>&#60;html&#62;</code>添加<code>class='han-la'</code>属性
 		<p>程序将会自动在所有的汉字与拉丁字母间添加一个空格，当然，这些空格不会被选中。如果你原本已经手动添加了空格，程序并不会在这之间再添加额外的空格。</p>
 		<p>同时，不会影响使用了等宽字体的<code>code</code>,<code>pre</code>等标签内的内容。</p>
